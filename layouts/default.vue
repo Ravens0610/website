@@ -3,6 +3,7 @@
     <v-navigation-drawer
       v-model="drawer"
       :mini-variant="miniVariant"
+      :mini-variant.sync="mini"
       :clipped="clipped"
       fixed
       app
@@ -28,6 +29,15 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
       <v-spacer />
+      <v-row align="center" style="max-width: 650px">
+        <v-text-field
+          placeholder="Search"
+          single-line
+          append-icon="mdi-magnify"
+          color="white"
+          hide-details
+        />
+      </v-row>
     </v-app-bar>
     <v-content>
       <v-container>
