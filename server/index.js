@@ -30,7 +30,8 @@ async function start() {
   }
 
   // Give nuxt middleware to express
-  app.use(bodyParser())
+  app.use(bodyParser.json())
+  app.use(bodyParser.urlencoded({ extended: true }))
   app.use(compression())
   app.use(helmet())
   app.use('/api/v1', require('./api')({ db, consola, config }))
