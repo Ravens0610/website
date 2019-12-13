@@ -2,6 +2,7 @@ const colors = require('vuetify/es5/util/colors').default
 
 module.exports = {
   mode: 'universal',
+  jwtKey: '',
   /*
    ** Headers of the page
    */
@@ -44,11 +45,33 @@ module.exports = {
   /*
    ** Nuxt.js modules
    */
-  modules: ['@nuxtjs/axios'],
+  modules: ['@nuxtjs/axios', '@nuxtjs/auth'],
   /*
    * Nuxt.js Axios
    */
   axios: {},
+  /*
+   * Nuxt.js Auth
+   */
+  auth: {
+    strategies: {
+      local: {
+        endpoints: {
+          login: {
+            url: '/api/v1/auth/login',
+            method: 'post',
+            propertyName: 'data.token'
+          },
+          user: {
+            url: '/api/v1/auth/user',
+            method: 'get',
+            propertyName: 'data'
+          },
+          logout: false
+        }
+      }
+    }
+  },
   /*
    ** vuetify module configuration
    ** https://github.com/nuxt-community/vuetify-module

@@ -12,7 +12,7 @@ export default {
   async asyncData({ $axios, query }) {
     if (typeof query.page === 'undefined') query.page = 0
     const videos = await $axios.get(
-      `/api/v1/searchVideos?query=${query.query}&page=${query.page}`
+      `/api/v1/videos/search?query=${query.query}&page=${query.page}`
     )
     return { videos }
   },
