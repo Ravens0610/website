@@ -3,7 +3,7 @@
     <v-flex xs12 sm8 md6>
       <v-card>
         <v-card-title class="headline">
-          Welcome to the Eternal Dream Project
+          Welcome to NeroVi
         </v-card-title>
         <v-card-text>
           <p>

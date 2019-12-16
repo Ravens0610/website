@@ -2,6 +2,10 @@
 
 > A modern video streaming service ran by content creators
 
+## Links
+
+* [Discord: https://discord.gg/Mn4YUua](https://discord.gg/Mn4YUua)
+
 ## Build Setup
 
 ``` bash

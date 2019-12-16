@@ -45,7 +45,7 @@
       </v-container>
     </v-content>
     <v-footer :fixed="fixed" app>
-      <span>&copy; 2019 Project Eternal Dream</span>
+      <span>&copy; 2019 NeroVi Teams</span>
     </v-footer>
   </v-app>
 </template>
