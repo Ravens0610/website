@@ -123,12 +123,13 @@ module.exports = ({ db, consola, config }) => {
               {
                 token
               },
+              null,
               'v1.auth.login'
             )
           })
           .catch((err) => sendError(res, err))
       })
-      .catch((err) => sendError(err))
+      .catch((err) => sendError(res, err))
   })
 
   router.get('/user', (req, res) => {

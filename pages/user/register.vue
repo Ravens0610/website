@@ -80,8 +80,10 @@ export default {
         })
 
         await this.$auth.loginWith('local', {
-          email: this.email,
-          password: this.password
+          data: {
+            email: this.email,
+            password: this.password
+          }
         })
 
         this.$router.push('/user')
