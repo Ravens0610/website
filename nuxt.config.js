@@ -2,7 +2,7 @@ const colors = require('vuetify/es5/util/colors').default
 
 module.exports = {
   mode: 'universal',
-  jwtKey: '',
+  jwtKey: '__CHANGE_ME__',
   /*
    ** Headers of the page
    */
@@ -45,7 +45,7 @@ module.exports = {
   /*
    ** Nuxt.js modules
    */
-  modules: ['@nuxtjs/axios', '@nuxtjs/auth'],
+  modules: ['@nuxtjs/axios', '@nuxtjs/auth', 'nuxt-izitoast'],
   /*
    * Nuxt.js Axios
    */
@@ -71,6 +71,14 @@ module.exports = {
         }
       }
     }
+  },
+  /*
+   * Notification library
+   */
+  izitoast: {
+    position: 'topRight',
+    transitionIn: 'bounceInLeft',
+    transitionOut: 'fadeOutRight'
   },
   /*
    ** vuetify module configuration

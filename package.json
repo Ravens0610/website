@@ -47,6 +47,7 @@
     "husky": "^2.7.0",
     "lint-staged": "^8.2.1",
     "nodemon": "^1.18.9",
+    "nuxt-izitoast": "^1.0.0",
     "prettier": "^1.16.4",
     "stylelint": "^10.1.0",
     "vue": "^2.6.11",

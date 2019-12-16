@@ -44,7 +44,7 @@ module.exports = ({ db, consola, config }) => {
   router.post('/register', (req, res) => {
     const username = req.body.username
     if (!username) return sendError(res, `Invalid username`)
-    const passwd = req.body.passwd
+    const passwd = req.body.password
     if (!passwd) return sendError(res, `Invalid password`)
     const email = req.body.email
     if (!email) return sendError(res, `Invalid email`)
@@ -88,6 +88,47 @@ module.exports = ({ db, consola, config }) => {
       .catch((err) =>
         sendError(res, `Failed to check if user already exists: ${err}`)
       )
+  })
+
+  router.post('/login', (req, res) => {
+    const email = req.body.email
+    if (!email) return sendError(res, 'Invalid email')
+    const password = req.body.password
+    if (!password) return sendError(res, 'Invalid password')
+    db.User.findOne({
+      where: {
+        email
+      }
+    })
+      .then((user) => {
+        if (!user) return sendError(res, 'User does not exist')
+        bcrypt
+          .compare(password, user.get('password'))
+          .then((res) => {
+            if (!res) return sendError(res, 'Invalid password')
+            const token = jwt.sign(
+              {
+                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+                data: {
+                  userID: user.id
+                }
+              },
+              config.jwtKey
+            )
+            const tokens = user.get('tokens') || []
+            tokens.push(token)
+            user.set('tokens', tokens)
+            sendResponse(
+              res,
+              {
+                token
+              },
+              'v1.auth.login'
+            )
+          })
+          .catch((err) => sendError(res, err))
+      })
+      .catch((err) => sendError(err))
   })
 
   router.get('/user', (req, res) => {
