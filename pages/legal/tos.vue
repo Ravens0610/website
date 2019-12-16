@@ -11,5 +11,9 @@
   </v-layout>
 </template>
 <script>
-export default {}
+export default {
+  head: () => ({
+    title: 'Terms of Service'
+  })
+}
 </script>

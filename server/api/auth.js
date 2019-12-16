@@ -1,7 +1,12 @@
 const bcrypt = require('bcrypt')
 const express = require('express')
 const jwt = require('jsonwebtoken')
-const { sendResponse, sendError } = require('../utils.js')
+const {
+  getUserToken,
+  HTTPError,
+  sendResponse,
+  sendError
+} = require('../utils.js')
 
 const getUser = async (db, id, { email }) => {
   const user = await db.User.findOne({
@@ -33,30 +38,30 @@ const getUser = async (db, id, { email }) => {
 module.exports = ({ db, consola, config }) => {
   const router = express.Router()
 
-  router.get('/getUser', (req, res) => {
+  router.get('/getUser', (req, res, next) => {
     const id = req.query.id
-    if (!id) return sendError(res, 'Invalid user ID')
+    if (!id) return next(new HTTPError('Invalid user ID'))
     getUser(db, id, { email: false })
       .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
-      .catch((err) => sendError(res, err))
+      .catch((err) => next(new HTTPError(err.message)))
   })
 
-  router.post('/register', (req, res) => {
+  router.post('/register', (req, res, next) => {
     const username = req.body.username
-    if (!username) return sendError(res, `Invalid username`)
+    if (!username) return next(new HTTPError('Invalid username'))
     const passwd = req.body.password
-    if (!passwd) return sendError(res, `Invalid password`)
+    if (!passwd) return next(new HTTPError('Invalid password'))
     const email = req.body.email
-    if (!email) return sendError(res, `Invalid email`)
+    if (!email) return next(new HTTPError('Invalid email'))
     const bday = req.body.birthday
-    if (!bday) return sendError(res, `Invalid birthday`)
+    if (!bday) return next(new HTTPError('Invalid birthday'))
     db.User.findOne({
       where: {
         name: username
       }
     })
       .then((user) => {
-        if (user) return sendError(res, 'User already exists')
+        if (user) return next(new HTTPError('User already exists'))
         bcrypt
           .genSalt(10)
           .then((salt) => {
@@ -78,34 +83,34 @@ module.exports = ({ db, consola, config }) => {
                       .catch((err) => sendError(res, err))
                   })
                   .catch((err) =>
-                    sendError(res, `Failed to create user: ${err}`)
+                    next(new HTTPError(`Failed to create user: ${err}`))
                   )
               })
-              .catch((err) => sendError(res, err))
+              .catch((err) => next(new HTTPError(err)))
           })
-          .catch((err) => sendError(res, err))
+          .catch((err) => next(new HTTPError(err)))
       })
       .catch((err) =>
-        sendError(res, `Failed to check if user already exists: ${err}`)
+        next(new HTTPError(`Failed to check if user already exists: ${err}`))
       )
   })
 
-  router.post('/login', (req, res) => {
+  router.post('/login', (req, res, next) => {
     const email = req.body.email
-    if (!email) return sendError(res, 'Invalid email')
+    if (!email) return next(new HTTPError('Invalid email'))
     const password = req.body.password
-    if (!password) return sendError(res, 'Invalid password')
+    if (!password) return next(new HTTPError('Invalid password'))
     db.User.findOne({
       where: {
         email
       }
     })
       .then((user) => {
-        if (!user) return sendError(res, 'User does not exist')
+        if (!user) return next(new HTTPError('User does not exist'))
         bcrypt
           .compare(password, user.get('password'))
-          .then((res) => {
-            if (!res) return sendError(res, 'Invalid password')
+          .then((valid) => {
+            if (!valid) return next(new HTTPError('Invalid password'))
             const token = jwt.sign(
               {
                 exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
@@ -118,30 +123,37 @@ module.exports = ({ db, consola, config }) => {
             const tokens = user.get('tokens') || []
             tokens.push(token)
             user.set('tokens', tokens)
-            sendResponse(
-              res,
-              {
-                token
-              },
-              null,
-              'v1.auth.login'
-            )
+            user
+              .save()
+              .then(() =>
+                sendResponse(
+                  res,
+                  {
+                    token
+                  },
+                  null,
+                  'v1.auth.login'
+                )
+              )
+              .catch((err) => next(new HTTPError(err)))
           })
-          .catch((err) => sendError(res, err))
+          .catch((err) => next(new HTTPError(err)))
       })
-      .catch((err) => sendError(res, err))
+      .catch((err) => next(new HTTPError(err)))
   })
 
-  router.get('/user', (req, res) => {
-    const token = req.headers['x-access-token']
-    if (!token) return sendError(res, 'Invalid access token')
+  router.get('/user', (req, res, next) => {
+    const token = getUserToken(req)
+    if (!token) return next(new HTTPError('Invalid access token'))
     try {
-      const { userID } = jwt.verify(token, config.jwtKey)
+      const { userID } = jwt.verify(token, config.jwtKey, {
+        complete: true
+      }).payload.data
       getUser(db, userID, { email: true })
         .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
-        .catch((err) => sendError(res, err))
+        .catch((err) => next(new HTTPError(err)))
     } catch (e) {
-      sendError(res, `Invalid access token: ${e}`)
+      next(new HTTPError(`Invalid access token: ${e}`))
     }
   })
 

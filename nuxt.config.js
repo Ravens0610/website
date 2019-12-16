@@ -54,6 +54,12 @@ module.exports = {
    * Nuxt.js Auth
    */
   auth: {
+    redirect: {
+      login: '/user/login',
+      logout: '/',
+      callback: '/user',
+      home: '/user'
+    },
     strategies: {
       local: {
         endpoints: {

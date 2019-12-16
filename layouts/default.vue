@@ -27,10 +27,11 @@
     </v-navigation-drawer>
     <v-app-bar :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title v-text="title" />
       <v-spacer />
-      <v-row align="center" style="max-width: 650px">
+      <v-row align="center">
         <v-text-field
+          v-model="searchbox"
+          @click:append="search"
           placeholder="Search"
           single-line
           append-icon="mdi-magnify"
@@ -57,6 +58,7 @@ export default {
       clipped: false,
       drawer: false,
       fixed: false,
+      searchbox: '',
       items: [
         {
           icon: 'mdi-home',
@@ -65,9 +67,16 @@ export default {
         }
       ],
       miniVariant: false,
+      mini: false,
       right: true,
       rightDrawer: false,
       title: 'Explore Videos'
+    }
+  },
+  methods: {
+    search() {
+      if (this.searchbox.length > 0)
+        this.$router.push('/search?query=' + this.searchbox)
     }
   }
 }

@@ -1,7 +1,11 @@
+const path = require('path')
 const { Model, Sequelize } = require('sequelize')
 const uuidv4 = require('uuid/v4')
 
-const sequelize = new Sequelize('sqlite:.nuxt/database.db')
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: path.join(__dirname, '..', '.nuxt', 'nerovi.db')
+})
 
 class User extends Model {}
 
@@ -55,6 +59,11 @@ Video.init(
     likes: { type: Sequelize.INTEGER, defaultValue: 0 },
     dislikes: { type: Sequelize.INTEGER, defaultValue: 0 },
     channelID: { type: Sequelize.UUID, allowNull: false },
+    type: {
+      type: Sequelize.ENUM,
+      values: ['video', 'livestream', 'ad'],
+      defaultValue: 'video'
+    },
     targetAudience: {
       type: Sequelize.ENUM,
       values: ['children', 'teens', 'everyone']

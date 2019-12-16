@@ -50,6 +50,7 @@
     "nuxt-izitoast": "^1.0.0",
     "prettier": "^1.16.4",
     "stylelint": "^10.1.0",
+    "video.js": "^7.6.6",
     "vue": "^2.6.11",
     "vue-template-compiler": "^2.6.11"
   }

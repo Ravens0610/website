@@ -17,5 +17,9 @@
   </v-layout>
 </template>
 <script>
-export default {}
+export default {
+  head: () => ({
+    title: 'Explore Videos'
+  })
+}
 </script>

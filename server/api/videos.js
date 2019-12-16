@@ -1,5 +1,7 @@
+const fs = require('fs')
+const path = require('path')
 const express = require('express')
-const { sendResponse, sendError } = require('../utils.js')
+const { HTTPError, sendResponse } = require('../utils.js')
 
 const getChannel = async (db, id) => {
   const channel = await db.Channel.findOne({
@@ -38,8 +40,52 @@ const getVideo = async (db, id) => {
 module.exports = ({ db, consola }) => {
   const router = express.Router()
 
+  router.get('/stream/:id', (req, res, next) => {
+    db.Video.findOne({
+      where: {
+        id: req.params.id
+      }
+    })
+      .then((video) => {
+        if (!video)
+          return next(new HTTPError(`Video ${req.params.id} does not exist`))
+        const p = path.join(
+          __dirname,
+          '..',
+          '..',
+          '.nuxt',
+          'videos',
+          video.id + '.mp4'
+        )
+        const stat = fs.statSync(p)
+        const fileSize = stat.size
+        const range = req.headers.range
+        if (range) {
+          const parts = range.replace(/bytes=/, '').split('-')
+          const start = parseInt(parts[0], 10)
+          const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1
+          const chunkSize = end - start + 1
+          const file = fs.createReadStream(p, { start, end })
+          res.writeHead(206, {
+            'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': chunkSize,
+            'Content-Type': 'video/mp4'
+          })
+          file.pipe(res)
+        } else {
+          res.writeHead(200, {
+            'Content-Length': fileSize,
+            'Content-Type': 'video/mp4'
+          })
+          fs.createReadStream(p).pipe(res)
+        }
+      })
+      .catch((err) => next(new HTTPError(err)))
+  })
+
   router.get('/search', (req, res, next) => {
-    if (!req.query.query) return sendError(res, 'Invalid query parameter')
+    if (!req.query.query) return next(new HTTPError('Invalid query parameter'))
     if (!req.query.page) req.query.page = 0
     else req.query.page = parseInt(req.query.page)
     db.Video.findAll({
@@ -57,9 +103,9 @@ module.exports = ({ db, consola }) => {
       .then((videos) => {
         Promise.all(videos.map(({ id }) => getVideo(db, id)))
           .then((videos) => sendResponse(res, videos, null, 'v1.videos.search'))
-          .catch((err) => sendError(res, err))
+          .catch((err) => next(new HTTPError(err)))
       })
-      .catch((err) => sendError(res, err))
+      .catch((err) => next(new HTTPError(err)))
   })
 
   return router

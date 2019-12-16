@@ -54,6 +54,9 @@
 <script>
 export default {
   middleware: 'user-guest',
+  head: () => ({
+    title: 'Register User'
+  }),
   data() {
     return {
       username: '',

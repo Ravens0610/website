@@ -20,5 +20,9 @@
   </v-layout>
 </template>
 <script>
-export default {}
+export default {
+  head: () => ({
+    title: 'Legal Information'
+  })
+}
 </script>
