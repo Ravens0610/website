@@ -1,4 +1,4 @@
-# eternal-dream
+# NeroVi
 
 > A modern video streaming service ran by content creators
 

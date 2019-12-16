@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt')
 const express = require('express')
 const jwt = require('jsonwebtoken')
 const { sendResponse, sendError } = require('../utils.js')
@@ -16,14 +17,15 @@ const getUser = async (db, id, { email }) => {
   })
   return {
     id,
-    name: user.name,
-    email: email ? user.email : null,
-    joined: user.joined,
+    name: user.get('name'),
+    email: email ? user.get('email') : null,
+    joined: user.get('joined'),
+    type: user.get('type'),
     channels: channels.map((channel) => ({
-      name: channel.name,
-      desc: channel.desc,
-      id: channel.id,
-      joined: channel.joined
+      name: channel.get('name'),
+      desc: channel.get('desc'),
+      id: channel.get('id'),
+      joined: channel.get('joined')
     }))
   }
 }
@@ -46,6 +48,8 @@ module.exports = ({ db, consola, config }) => {
     if (!passwd) return sendError(res, `Invalid password`)
     const email = req.body.email
     if (!email) return sendError(res, `Invalid email`)
+    const bday = req.body.birthday
+    if (!bday) return sendError(res, `Invalid birthday`)
     db.User.findOne({
       where: {
         name: username
@@ -53,7 +57,33 @@ module.exports = ({ db, consola, config }) => {
     })
       .then((user) => {
         if (user) return sendError(res, 'User already exists')
-        // TODO: create user
+        bcrypt
+          .genSalt(10)
+          .then((salt) => {
+            bcrypt
+              .hash(passwd, salt)
+              .then((password) => {
+                db.User.create({
+                  name: username,
+                  type: 'default',
+                  password,
+                  email,
+                  bday
+                })
+                  .then((user) => {
+                    getUser(db, user.get('id'), { email: true })
+                      .then((user) =>
+                        sendResponse(res, user, null, 'v1.auth.register')
+                      )
+                      .catch((err) => sendError(res, err))
+                  })
+                  .catch((err) =>
+                    sendError(res, `Failed to create user: ${err}`)
+                  )
+              })
+              .catch((err) => sendError(res, err))
+          })
+          .catch((err) => sendError(res, err))
       })
       .catch((err) =>
         sendError(res, `Failed to check if user already exists: ${err}`)

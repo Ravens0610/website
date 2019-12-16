@@ -1,4 +1,5 @@
 const { Model, Sequelize } = require('sequelize')
+const uuidv4 = require('uuid/v4')
 
 const sequelize = new Sequelize('sqlite:.nuxt/database.db')
 
@@ -10,9 +11,17 @@ User.init(
     email: { type: Sequelize.STRING, allowNull: false },
     password: { type: Sequelize.STRING, allowNull: false },
     joined: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
+    bday: { type: Sequelize.DATE, allowNull: false },
+    tokens: { type: Sequelize.JSON },
+    type: {
+      type: Sequelize.ENUM,
+      values: ['default', 'admin']
+    },
     id: {
       type: Sequelize.UUID,
-      defaultValue: Sequelize.UUIDV2,
+      defaultValue: () => {
+        return uuidv4()
+      },
       primaryKey: true
     }
   },
