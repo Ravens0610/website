@@ -16,7 +16,14 @@ User.init(
     password: { type: Sequelize.STRING, allowNull: false },
     joined: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
     bday: { type: Sequelize.DATE, allowNull: false },
-    tokens: { type: Sequelize.JSON },
+    tokens: {
+      type: Sequelize.JSON,
+      defaultValue: []
+    },
+    follows: {
+      type: Sequelize.JSON,
+      defaultValue: []
+    },
     type: {
       type: Sequelize.ENUM,
       values: ['default', 'admin']
@@ -40,6 +47,10 @@ Channel.init(
     desc: Sequelize.TEXT,
     joined: { type: Sequelize.DATE, defaultValue: Sequelize.NOW },
     userID: { type: Sequelize.UUID, allowNull: false },
+    subs: {
+      type: Sequelize.JSON,
+      defaultValue: []
+    },
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV2,

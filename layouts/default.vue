@@ -27,18 +27,15 @@
     </v-navigation-drawer>
     <v-app-bar :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-spacer />
-      <v-row align="center">
-        <v-text-field
-          v-model="searchbox"
-          @click:append="search"
-          placeholder="Search"
-          single-line
-          append-icon="mdi-magnify"
-          color="white"
-          hide-details
-        />
-      </v-row>
+      <v-text-field
+        v-model="searchbox"
+        @click:append="search"
+        placeholder="Search"
+        single-line
+        append-icon="mdi-magnify"
+        color="white"
+        hide-details
+      />
     </v-app-bar>
     <v-content>
       <v-container>
