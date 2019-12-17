@@ -4,7 +4,7 @@ const uuidv4 = require('uuid/v4')
 
 const sequelize = new Sequelize({
   dialect: 'sqlite',
-  storage: path.join(__dirname, '..', '.nuxt', 'nerovi.db')
+  storage: path.join(__dirname, '..', '.data', 'nerovi.db')
 })
 
 class User extends Model {}

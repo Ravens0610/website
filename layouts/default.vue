@@ -8,6 +8,22 @@
       fixed
       app
     >
+      <template v-slot:prepend>
+        <v-list v-if="$store.$auth.loggedIn">
+          <v-list-item>
+            <v-list-item-avatar>
+              <v-img :src="avatarLink" />
+            </v-list-item-avatar>
+          </v-list-item>
+          <v-list-item link two-line>
+            <v-list-item-content>
+              <v-list-item-title class="title">{{
+                user.name
+              }}</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </template>
       <v-list>
         <v-list-item
           v-for="(item, i) in items"
@@ -56,6 +72,11 @@ export default {
       drawer: false,
       fixed: false,
       searchbox: '',
+      loggedIn: this.$store.$auth.loggedIn,
+      user: this.$store.$auth.user,
+      avatarLink: this.$store.$auth.loggedIn
+        ? `/api/v1/auth/avatar?id=${this.$store.$auth.user.id}`
+        : null,
       items: [
         {
           icon: 'mdi-home',
@@ -64,10 +85,7 @@ export default {
         }
       ],
       miniVariant: false,
-      mini: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Explore Videos'
+      mini: false
     }
   },
   methods: {

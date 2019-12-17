@@ -1,5 +1,7 @@
-const bcrypt = require('bcrypt')
+const fs = require('fs')
+const path = require('path')
 const express = require('express')
+const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const {
   getUserToken,
@@ -44,6 +46,19 @@ module.exports = ({ db, consola, config }) => {
     getUser(db, id, { email: false })
       .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
       .catch((err) => next(new HTTPError(err.message)))
+  })
+
+  router.get('/avatar', (req, res, next) => {
+    const id = req.query.id
+    if (!id) return next(new HTTPError('Invalid user ID'))
+    const p = path.join(__dirname, '..', '..', '.data', 'avatars', `${id}.png`)
+    const stat = fs.statSync(p)
+    const fileSize = stat.size
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': 'image/png'
+    })
+    fs.createReadStream(p).pipe(res)
   })
 
   router.post('/register', (req, res, next) => {

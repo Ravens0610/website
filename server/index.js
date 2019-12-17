@@ -1,3 +1,5 @@
+const fs = require('fs')
+const path = require('path')
 const bodyParser = require('body-parser')
 const compression = require('compression')
 const consola = require('consola')
@@ -14,6 +16,15 @@ config.dev = process.env.NODE_ENV !== 'production'
 const db = require('./db')
 
 async function start() {
+  const mkdir = (p) =>
+    !fs.existsSync(path.join(__dirname, '..', '.data', p))
+      ? fs.mkdirSync(path.join(__dirname, '..', '.data', p))
+      : null
+
+  mkdir('.')
+  mkdir('avatars')
+  mkdir('videos')
+
   await db.sequelize.sync()
 
   // Init Nuxt.js

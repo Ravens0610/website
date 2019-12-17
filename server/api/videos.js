@@ -53,7 +53,7 @@ module.exports = ({ db, consola }) => {
           __dirname,
           '..',
           '..',
-          '.nuxt',
+          '.data',
           'videos',
           video.id + '.mp4'
         )
