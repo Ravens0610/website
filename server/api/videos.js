@@ -86,26 +86,47 @@ module.exports = ({ db, consola }) => {
 
   router.get('/search', (req, res, next) => {
     if (!req.query.query) return next(new HTTPError('Invalid query parameter'))
-    if (!req.query.page) req.query.page = 0
-    else req.query.page = parseInt(req.query.page)
-    db.Video.findAll({
-      where: {
-        title: db.sequelize.where(
-          db.sequelize.fn('LOWER', db.sequelize.col('title')),
-          'LIKE',
-          '%' + req.query.query + '%'
-        )
-      },
-      limit: 10,
-      offset: req.query.page,
-      attributes: ['id']
-    })
-      .then((videos) => {
-        Promise.all(videos.map(({ id }) => getVideo(db, id)))
-          .then((videos) => sendResponse(res, videos, null, 'v1.videos.search'))
-          .catch((err) => next(new HTTPError(err)))
+    const where = {
+      title: db.sequelize.where(
+        db.sequelize.fn('LOWER', db.sequelize.col('title')),
+        'LIKE',
+        '%' + req.query.query + '%'
+      )
+    }
+    if (!req.query.page) {
+      db.Video.findAll({
+        where,
+        attributes: ['id']
       })
-      .catch((err) => next(new HTTPError(err)))
+        .then((videos) => {
+          Promise.all(videos.map(({ id }) => getVideo(db, id)))
+            .then((videos) => sendResponse(res, { videos }, null, 'v1.videos.search'))
+            .catch((err) => next(new HTTPError(err)))
+        })
+        .catch((err) => next(new HTTPError(err)))
+    } else {
+      req.query.page = parseInt(req.query.page)
+      db.Video.findAndCountAll({
+        where,
+        limit: 10,
+        offset: req.query.page,
+        attributes: ['id']
+      })
+        .then(({ row, count }) => {
+          Promise.all(videos.map(({ id }) => getVideo(db, id)))
+            .then((videos) => {
+              db.Video.count({ where })
+                .then((total) => sendResponse(res, {
+                  videos: row,
+                  count,
+                  total
+                }, null, 'v1.videos.search'))
+                .catch((err) => next(new HTTPError(err)))
+            })
+            .catch((err) => next(new HTTPError(err)))
+        })
+        .catch((err) => next(new HTTPError(err)))
+    }
   })
 
   return router
