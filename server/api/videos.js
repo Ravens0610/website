@@ -100,7 +100,9 @@ module.exports = ({ db, consola }) => {
       })
         .then((videos) => {
           Promise.all(videos.map(({ id }) => getVideo(db, id)))
-            .then((videos) => sendResponse(res, { videos }, null, 'v1.videos.search'))
+            .then((videos) =>
+              sendResponse(res, { videos }, null, 'v1.videos.search')
+            )
             .catch((err) => next(new HTTPError(err)))
         })
         .catch((err) => next(new HTTPError(err)))
@@ -113,14 +115,22 @@ module.exports = ({ db, consola }) => {
         attributes: ['id']
       })
         .then(({ row, count }) => {
-          Promise.all(videos.map(({ id }) => getVideo(db, id)))
+          Promise.all(row.map(({ id }) => getVideo(db, id)))
             .then((videos) => {
               db.Video.count({ where })
-                .then((total) => sendResponse(res, {
-                  videos: row,
-                  count,
-                  total
-                }, null, 'v1.videos.search'))
+                .then((total) =>
+                  sendResponse(
+                    res,
+                    {
+                      videos,
+                      count,
+                      total,
+                      pages: Math.ceil(total / 10)
+                    },
+                    null,
+                    'v1.videos.search'
+                  )
+                )
                 .catch((err) => next(new HTTPError(err)))
             })
             .catch((err) => next(new HTTPError(err)))

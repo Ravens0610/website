@@ -15,7 +15,7 @@
               <v-img :src="avatarLink" />
             </v-list-item-avatar>
           </v-list-item>
-          <v-list-item link two-line>
+          <v-list-item link two-line to="/user">
             <v-list-item-content>
               <v-list-item-title class="title">{{
                 user.name
@@ -40,6 +40,20 @@
           </v-list-item-content>
         </v-list-item>
       </v-list>
+      <template v-slot:append>
+        <v-list v-if="!$store.$auth.loggedIn">
+          <v-list-item to="/user/login">
+            <v-list-item-content>
+              <v-list-item-title>Log In</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item to="/user/register">
+            <v-list-item-content>
+              <v-list-item-title>Register Account</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </template>
     </v-navigation-drawer>
     <v-app-bar :clipped-left="clipped" fixed app>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />

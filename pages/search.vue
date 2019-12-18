@@ -1,11 +1,10 @@
 <template>
-  <v-layout column justify-left align-left>
-    <v-flex xs12 sm12 md12>
-      <v-card v-for="(video, index) in videos" :key="index">
-        <v-card-title>{{ video.title }}</v-card-title>
-      </v-card>
-    </v-flex>
-  </v-layout>
+  <div>
+    <v-card v-for="(video, index) in videos" :key="index">
+      <v-card-title>{{ video.title }}</v-card-title>
+    </v-card>
+    <v-pagination v-model="pageNumber" :length="pageCount" circle />
+  </div>
 </template>
 <script>
 export default {
@@ -15,7 +14,8 @@ export default {
       '/api/v1/videos/search?query=' + query.query + '&page=' + query.page
     )
     return {
-      videos: data,
+      videos: data.videos,
+      pageCount: data.pages,
       searchTerms: query.query,
       pageNumber: parseInt(query.page, 10)
     }
