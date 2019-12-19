@@ -14,6 +14,7 @@ const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
 
 const db = require('./db/')
+const controllers = require('./controllers/')(db)
 
 async function start() {
   const mkdir = (p) =>
@@ -45,7 +46,7 @@ async function start() {
   app.use(bodyParser.urlencoded({ extended: true }))
   app.use(compression())
   app.use(helmet())
-  app.use('/api/v1', require('./api')({ db, consola, config }))
+  app.use('/api/v1', require('./api')({ db, controllers, consola, config }))
 
   app.use(nuxt.render)
 

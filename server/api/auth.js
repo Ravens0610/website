@@ -5,42 +5,16 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { getUserToken, HTTPError, sendResponse } = require('../utils.js')
 
-module.exports = ({ db, consola, config }) => {
+module.exports = ({ db, controllers, consola, config }) => {
   const router = express.Router()
-
-  const getUser = async (id, { email }) => {
-    const user = await db.User.findOne({
-      where: {
-        id
-      }
-    })
-    if (user == null) throw new Error(`Invalid user ID: ${id}`)
-    const channels = await db.Channel.findAll({
-      where: {
-        userID: id
-      }
-    })
-    return {
-      id,
-      name: user.get('name'),
-      email: email ? user.get('email') : null,
-      joined: user.get('joined'),
-      type: user.get('type'),
-      channels: channels.map((channel) => ({
-        name: channel.get('name'),
-        desc: channel.get('desc'),
-        id: channel.get('id'),
-        joined: channel.get('joined')
-      }))
-    }
-  }
 
   router.get('/getUser', (req, res, next) => {
     const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       req.query.id
     )
     if (!id) return next(new HTTPError('Invalid user ID'))
-    getUser(id, { email: false })
+    controllers.auth
+      .getUser(id, { email: false })
       .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
       .catch((err) => next(new HTTPError(err.message)))
   })
@@ -86,7 +60,7 @@ module.exports = ({ db, consola, config }) => {
           bday
         })
       })
-      .then((user) => getUser(user.get('id'), { email: true }))
+      .then((user) => controllers.auth.getUser(user.get('id'), { email: true }))
       .then((user) => sendResponse(res, user, null, 'v1.auth.register'))
       .catch((err) =>
         next(new HTTPError(`Failed to check if user already exists: ${err}`))
@@ -103,39 +77,32 @@ module.exports = ({ db, consola, config }) => {
         email
       }
     })
-      .then((user) => {
+      .then(async (user) => {
         if (!user) return next(new HTTPError('User does not exist'))
-        bcrypt
-          .compare(password, user.get('password'))
-          .then((valid) => {
-            if (!valid) return next(new HTTPError('Invalid password'))
-            const token = jwt.sign(
-              {
-                exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
-                data: {
-                  userID: user.id
-                }
-              },
-              config.jwtKey
-            )
-            const tokens = user.get('tokens') || []
-            tokens.push(token)
-            user.set('tokens', tokens)
-            user
-              .save()
-              .then(() =>
-                sendResponse(
-                  res,
-                  {
-                    token
-                  },
-                  null,
-                  'v1.auth.login'
-                )
-              )
-              .catch((err) => next(new HTTPError(err)))
-          })
-          .catch((err) => next(new HTTPError(err)))
+        const isValid = await bcrypt.compare(password, user.get('password'))
+        if (!isValid) return next(new HTTPError('Invalid password'))
+        const token = jwt.sign(
+          {
+            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
+            data: {
+              userID: user.id
+            }
+          },
+          config.jwtKey
+        )
+        const tokens = user.get('tokens') || []
+        tokens.push(token)
+        user.set('tokens', tokens)
+        return user.save().then(() =>
+          sendResponse(
+            res,
+            {
+              token
+            },
+            null,
+            'v1.auth.login'
+          )
+        )
       })
       .catch((err) => next(new HTTPError(err)))
   })
@@ -147,7 +114,8 @@ module.exports = ({ db, consola, config }) => {
       const { userID } = jwt.verify(token, config.jwtKey, {
         complete: true
       }).payload.data
-      getUser(userID, { email: true })
+      controllers.auth
+        .getUser(userID, { email: true })
         .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
         .catch((err) => next(new HTTPError(err)))
     } catch (e) {

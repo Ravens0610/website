@@ -3,42 +3,8 @@ const path = require('path')
 const express = require('express')
 const { HTTPError, sendResponse } = require('../utils.js')
 
-module.exports = ({ db, consola }) => {
+module.exports = ({ db, controllers, consola }) => {
   const router = express.Router()
-
-  const getChannel = async (id) => {
-    const channel = await db.Channel.findOne({
-      where: {
-        id
-      }
-    })
-    return {
-      id,
-      name: channel.name,
-      desc: channel.desc,
-      joined: channel.joined,
-      userID: channel.userID
-    }
-  }
-
-  const getVideo = async (db, id) => {
-    const video = await db.Video.findOne({
-      where: {
-        id
-      }
-    })
-    const channel = await getChannel(video.channelID)
-    return {
-      id,
-      title: video.title,
-      desc: video.desc,
-      likes: video.likes,
-      dislikes: video.dislikes,
-      uploaded: video.uploaded,
-      targetAudience: video.targetAudience,
-      channel
-    }
-  }
 
   router.get('/stream/:id', (req, res, next) => {
     const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -102,7 +68,9 @@ module.exports = ({ db, consola }) => {
         where,
         attributes: ['id']
       })
-        .then((videos) => Promise.all(videos.map(({ id }) => getVideo(id))))
+        .then((videos) =>
+          Promise.all(videos.map(({ id }) => controllers.videos.getVideo(id)))
+        )
         .then((videos) =>
           sendResponse(res, { videos }, null, 'v1.videos.search')
         )
@@ -118,7 +86,7 @@ module.exports = ({ db, consola }) => {
           Promise.all(
             row
               .slice(offset, offset + 10)
-              .map((video) => getVideo(video.get('id')))
+              .map((video) => controllers.videos.getVideo(video.get('id')))
           ).then((videos) =>
             sendResponse(res, {
               videos,
