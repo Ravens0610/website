@@ -13,7 +13,7 @@ const app = express()
 const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
 
-const db = require('./db')
+const db = require('./db/')
 
 async function start() {
   const mkdir = (p) =>
@@ -56,4 +56,10 @@ async function start() {
     badge: true
   })
 }
-start()
+start().catch((err) => {
+  consola.error({
+    message: err.stack,
+    badge: true
+  })
+  process.exit(1)
+})

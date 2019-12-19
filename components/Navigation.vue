@@ -9,7 +9,7 @@
     app
   >
     <template v-slot:prepend>
-      <v-list v-if="$store.$auth.loggedIn">
+      <v-list v-if="$store.$auth.loggedIn" :dense="miniVariant" nav>
         <v-list-item>
           <v-list-item-avatar>
             <v-img :src="avatarLink" />
@@ -26,7 +26,7 @@
       </v-list>
     </template>
     <v-divider />
-    <v-list nav>
+    <v-list :dense="miniVariant" nav>
       <v-list-item v-for="(item, i) in items" :key="i" :to="item.to" link>
         <v-list-item-action>
           <v-icon>{{ item.icon }}</v-icon>
@@ -37,7 +37,7 @@
       </v-list-item>
     </v-list>
     <v-divider />
-    <v-list v-if="!$store.$auth.loggedIn">
+    <v-list v-if="!$store.$auth.loggedIn" :dense="miniVariant" nav>
       <v-list-item
         v-for="(item, i) in appendUserlessItems"
         :key="i"
