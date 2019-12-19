@@ -1,14 +1,31 @@
 const { Model } = require('sequelize')
 
 module.exports = (sequelize, DataTypes) => {
-  class Channel extends Model {}
+  class Channel extends Model {
+    static associate({ User, Video }) {
+      Channel.hasMany(Video, {
+        foreignKey: 'channelID'
+      })
+      Channel.belongsTo(User, {
+        foreignKey: 'id',
+        constraints: false
+      })
+    }
+  }
 
   Channel.init(
     {
       name: { type: DataTypes.STRING, allowNull: false },
       desc: DataTypes.TEXT,
       joined: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
-      userID: { type: DataTypes.UUID, allowNull: false },
+      userID: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'user',
+          key: 'id'
+        }
+      },
       subs: {
         type: DataTypes.JSON,
         defaultValue: []
@@ -19,7 +36,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true
       }
     },
-    { sequelize }
+    { sequelize, tableName: 'channel' }
   )
   return Channel
 }

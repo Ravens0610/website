@@ -1,8 +1,10 @@
+const path = require('path')
 const colors = require('vuetify/es5/util/colors').default
 
 module.exports = {
   mode: 'universal',
   jwtKey: '__CHANGE_ME__',
+  dataPath: process.env.NEROVI_DATA_PATH || path.join(__dirname, '.data'),
   /*
    ** Headers of the page
    */

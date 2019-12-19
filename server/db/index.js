@@ -10,4 +10,11 @@ const Channel = sequelize.import('./models/channel')
 const User = sequelize.import('./models/user')
 const Video = sequelize.import('./models/video')
 
-module.exports = { User, Video, Channel, sequelize }
+const models = { Channel, User, Video }
+Object.keys(models).forEach((name) => {
+  if (models[name].associate) {
+    models[name].associate(models)
+  }
+})
+
+module.exports = { ...models, sequelize }

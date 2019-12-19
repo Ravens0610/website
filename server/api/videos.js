@@ -3,42 +3,42 @@ const path = require('path')
 const express = require('express')
 const { HTTPError, sendResponse } = require('../utils.js')
 
-const getChannel = async (db, id) => {
-  const channel = await db.Channel.findOne({
-    where: {
-      id
-    }
-  })
-  return {
-    id,
-    name: channel.name,
-    desc: channel.desc,
-    joined: channel.joined,
-    userID: channel.userID
-  }
-}
-
-const getVideo = async (db, id) => {
-  const video = await db.Video.findOne({
-    where: {
-      id
-    }
-  })
-  const channel = await getChannel(db, video.channelID)
-  return {
-    id,
-    title: video.title,
-    desc: video.desc,
-    likes: video.likes,
-    dislikes: video.dislikes,
-    uploaded: video.uploaded,
-    targetAudience: video.targetAudience,
-    channel
-  }
-}
-
 module.exports = ({ db, consola }) => {
   const router = express.Router()
+
+  const getChannel = async (id) => {
+    const channel = await db.Channel.findOne({
+      where: {
+        id
+      }
+    })
+    return {
+      id,
+      name: channel.name,
+      desc: channel.desc,
+      joined: channel.joined,
+      userID: channel.userID
+    }
+  }
+
+  const getVideo = async (db, id) => {
+    const video = await db.Video.findOne({
+      where: {
+        id
+      }
+    })
+    const channel = await getChannel(video.channelID)
+    return {
+      id,
+      title: video.title,
+      desc: video.desc,
+      likes: video.likes,
+      dislikes: video.dislikes,
+      uploaded: video.uploaded,
+      targetAudience: video.targetAudience,
+      channel
+    }
+  }
 
   router.get('/stream/:id', (req, res, next) => {
     const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
@@ -102,43 +102,32 @@ module.exports = ({ db, consola }) => {
         where,
         attributes: ['id']
       })
-        .then((videos) => {
-          Promise.all(videos.map(({ id }) => getVideo(db, id)))
-            .then((videos) =>
-              sendResponse(res, { videos }, null, 'v1.videos.search')
-            )
-            .catch((err) => next(new HTTPError(err)))
-        })
+        .then((videos) => Promise.all(videos.map(({ id }) => getVideo(id))))
+        .then((videos) =>
+          sendResponse(res, { videos }, null, 'v1.videos.search')
+        )
         .catch((err) => next(new HTTPError(err)))
     } else {
       req.query.page = parseInt(req.query.page)
+      const offset = req.query.page * 10
       db.Video.findAndCountAll({
         where,
-        limit: 10,
-        offset: req.query.page,
         attributes: ['id']
       })
-        .then(({ row, count }) => {
-          Promise.all(row.map(({ id }) => getVideo(db, id)))
-            .then((videos) => {
-              db.Video.count({ where })
-                .then((total) =>
-                  sendResponse(
-                    res,
-                    {
-                      videos,
-                      count,
-                      total,
-                      pages: Math.ceil(total / 10)
-                    },
-                    null,
-                    'v1.videos.search'
-                  )
-                )
-                .catch((err) => next(new HTTPError(err)))
+        .then(({ row, count }) =>
+          Promise.all(
+            row
+              .slice(offset, offset + 10)
+              .map((video) => getVideo(video.get('id')))
+          ).then((videos) =>
+            sendResponse(res, {
+              videos,
+              count: videos.length,
+              total: count,
+              pages: Math.ceil(count / 10)
             })
-            .catch((err) => next(new HTTPError(err)))
-        })
+          )
+        )
         .catch((err) => next(new HTTPError(err)))
     }
   })

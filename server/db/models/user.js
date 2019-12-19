@@ -2,7 +2,13 @@ const { Model } = require('sequelize')
 const uuidv4 = require('uuid/v4')
 
 module.exports = (sequelize, DataTypes) => {
-  class User extends Model {}
+  class User extends Model {
+    static associate({ Channel }) {
+      User.hasMany(Channel, {
+        foreignKey: 'ownerID'
+      })
+    }
+  }
 
   User.init(
     {
@@ -31,7 +37,7 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true
       }
     },
-    { sequelize }
+    { sequelize, tableName: 'user' }
   )
   return User
 }

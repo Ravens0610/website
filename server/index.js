@@ -17,8 +17,8 @@ const db = require('./db/')
 
 async function start() {
   const mkdir = (p) =>
-    !fs.existsSync(path.join(__dirname, '..', '.data', p))
-      ? fs.mkdirSync(path.join(__dirname, '..', '.data', p))
+    !fs.existsSync(path.join(config.dataPath, p))
+      ? fs.mkdirSync(path.join(config.dataPath, p))
       : null
 
   mkdir('.')
