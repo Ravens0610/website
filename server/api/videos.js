@@ -41,9 +41,13 @@ module.exports = ({ db, consola }) => {
   const router = express.Router()
 
   router.get('/stream/:id', (req, res, next) => {
+    const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      req.query.id
+    )
+    if (!id) return next(new HTTPError('Invalid video ID'))
     db.Video.findOne({
       where: {
-        id: req.params.id
+        id
       }
     })
       .then((video) => {

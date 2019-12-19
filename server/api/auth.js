@@ -41,7 +41,9 @@ module.exports = ({ db, consola, config }) => {
   const router = express.Router()
 
   router.get('/getUser', (req, res, next) => {
-    const id = req.query.id
+    const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      req.query.id
+    )
     if (!id) return next(new HTTPError('Invalid user ID'))
     getUser(db, id, { email: false })
       .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
@@ -49,7 +51,9 @@ module.exports = ({ db, consola, config }) => {
   })
 
   router.get('/avatar', (req, res, next) => {
-    const id = req.query.id
+    const id = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      req.query.id
+    )
     if (!id) return next(new HTTPError('Invalid user ID'))
     const p = path.join(__dirname, '..', '..', '.data', 'avatars', `${id}.png`)
     const stat = fs.statSync(p)

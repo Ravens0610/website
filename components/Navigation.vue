@@ -9,7 +9,7 @@
     app
   >
     <template v-slot:prepend>
-      <v-list v-if="$store.$auth.loggedIn" :dense="miniVariant" nav>
+      <v-list v-if="$store.$auth.loggedIn">
         <v-list-item>
           <v-list-item-avatar>
             <v-img :src="avatarLink" />
@@ -25,13 +25,23 @@
         </v-list-item>
       </v-list>
     </template>
-    <v-list :dense="miniVariant" nav>
+    <v-divider />
+    <v-list nav>
+      <v-list-item v-for="(item, i) in items" :key="i" :to="item.to" link>
+        <v-list-item-action>
+          <v-icon>{{ item.icon }}</v-icon>
+        </v-list-item-action>
+        <v-list-item-content>
+          <v-list-item-title v-text="item.title" />
+        </v-list-item-content>
+      </v-list-item>
+    </v-list>
+    <v-divider />
+    <v-list v-if="!$store.$auth.loggedIn">
       <v-list-item
-        v-for="(item, i) in items"
+        v-for="(item, i) in appendUserlessItems"
         :key="i"
         :to="item.to"
-        router
-        exact
         link
       >
         <v-list-item-action>
@@ -42,32 +52,12 @@
         </v-list-item-content>
       </v-list-item>
     </v-list>
-    <template v-slot:append>
-      <v-list v-if="!$store.$auth.loggedIn" :dense="miniVariant" nav>
-        <v-list-item to="/user/login" link>
-          <v-list-item-content>
-            <v-list-item-title>Log In</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item to="/user/register" link>
-          <v-list-item-content>
-            <v-list-item-title>Register Account</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </template>
   </v-navigation-drawer>
 </template>
 <script>
 export default {
   name: 'Navigation',
   props: {
-    value: {
-      type: Boolean,
-      default() {
-        return false
-      }
-    },
     clipped: {
       type: Boolean,
       default() {
@@ -101,6 +91,7 @@ export default {
   },
   data() {
     return {
+      value: null,
       loggedIn: this.$store.$auth.loggedIn,
       user: this.$store.$auth.user,
       avatarLink: this.$store.$auth.loggedIn
@@ -111,6 +102,18 @@ export default {
           icon: 'mdi-home',
           title: 'Home',
           to: '/'
+        }
+      ],
+      appendUserlessItems: [
+        {
+          icon: 'mdi-account-plus',
+          title: 'Register User',
+          to: '/user/register'
+        },
+        {
+          icon: 'mdi-login',
+          title: 'Log In',
+          to: '/user/login'
         }
       ]
     }
