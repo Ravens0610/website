@@ -10,6 +10,9 @@ export default {
   name: 'VideoPlayer',
   props: {
     options: {
+      validator(value) {
+        return typeof value === 'object'
+      },
       types: Object,
       default() {
         return {}

@@ -1,62 +1,20 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer
-      v-model="drawer"
-      :mini-variant="miniVariant"
-      :mini-variant.sync="mini"
-      :clipped="clipped"
-      fixed
-      app
-    >
-      <template v-slot:prepend>
-        <v-list v-if="$store.$auth.loggedIn">
-          <v-list-item>
-            <v-list-item-avatar>
-              <v-img :src="avatarLink" />
-            </v-list-item-avatar>
-          </v-list-item>
-          <v-list-item link two-line to="/user">
-            <v-list-item-content>
-              <v-list-item-title class="title">{{
-                user.name
-              }}</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </template>
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-      <template v-slot:append>
-        <v-list v-if="!$store.$auth.loggedIn">
-          <v-list-item to="/user/login">
-            <v-list-item-content>
-              <v-list-item-title>Log In</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-list-item to="/user/register">
-            <v-list-item-content>
-              <v-list-item-title>Register Account</v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-        </v-list>
-      </template>
-    </v-navigation-drawer>
-    <v-app-bar :clipped-left="clipped" fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
+    <!-- Desktop -->
+    <v-card>
+      <navigation
+        v-model="desktopDrawer"
+        class="d-block hidden-sm-and-down"
+        permanent
+        expand-on-hover
+        mini-variant
+        fixed
+      />
+    </v-card>
+    <!-- Mobile -->
+    <navigation v-model="mobileDrawer" />
+    <v-app-bar class="d-block hidden-md-and-up" fixed app>
+      <v-app-bar-nav-icon @click.stop="mobileDrawer = !mobileDrawer" />
       <v-text-field
         v-model="searchbox"
         @click:append="search"
@@ -72,34 +30,24 @@
         <nuxt />
       </v-container>
     </v-content>
-    <v-footer :fixed="fixed" app>
+    <v-footer app>
       <span>&copy; 2019 NeroVi Teams</span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import Navigation from '@/components/Navigation.vue'
+
 export default {
+  components: {
+    Navigation
+  },
   data() {
     return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      searchbox: '',
-      loggedIn: this.$store.$auth.loggedIn,
-      user: this.$store.$auth.user,
-      avatarLink: this.$store.$auth.loggedIn
-        ? `/api/v1/auth/avatar?id=${this.$store.$auth.user.id}`
-        : null,
-      items: [
-        {
-          icon: 'mdi-home',
-          title: 'Home',
-          to: '/'
-        }
-      ],
-      miniVariant: false,
-      mini: false
+      desktopDrawer: null,
+      mobileDrawer: false,
+      searchbox: ''
     }
   },
   methods: {
