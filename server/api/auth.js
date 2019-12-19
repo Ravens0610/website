@@ -43,28 +43,13 @@ module.exports = ({ db, controllers, consola, config }) => {
     if (!email) return next(new HTTPError('Invalid email'))
     const bday = req.body.birthday
     if (!bday) return next(new HTTPError('Invalid birthday'))
-    db.User.findOne({
-      where: {
-        name: username
-      }
-    })
-      .then(async (user) => {
-        if (user) return next(new HTTPError('User already exists'))
-        const salt = await bcrypt.genSalt(10)
-        const password = await bcrypt.hash(passwd, salt)
-        return db.User.create({
-          name: username,
-          type: 'default',
-          password,
-          email,
-          bday
-        })
-      })
-      .then((user) => controllers.auth.getUser(user.get('id'), { email: true }))
-      .then((user) => sendResponse(res, user, null, 'v1.auth.register'))
-      .catch((err) =>
-        next(new HTTPError(`Failed to check if user already exists: ${err}`))
+
+    controllers.auth
+      .register(username, passwd, email, bday)
+      .then((user) =>
+        sendResponse(res, user.toJSON(), null, 'v1.auth.register')
       )
+      .catch((err) => next(new HTTPError(err)))
   })
 
   router.post('/login', (req, res, next) => {
@@ -114,9 +99,14 @@ module.exports = ({ db, controllers, consola, config }) => {
       const { userID } = jwt.verify(token, config.jwtKey, {
         complete: true
       }).payload.data
-      controllers.auth
-        .getUser(userID, { email: true })
-        .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
+      db.User.findOne({
+        where: {
+          id: userID
+        }
+      })
+        .then((user) =>
+          sendResponse(res, user.toJSON(), null, `v1.auth.getUser`)
+        )
         .catch((err) => next(new HTTPError(err)))
     } catch (e) {
       next(new HTTPError(`Invalid access token: ${e}`))

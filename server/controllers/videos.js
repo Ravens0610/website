@@ -1,34 +1,24 @@
-module.exports = (db) => {
-  const getChannel = async (id) => {
-    const channel = await db.Channel.findOne({
+const { Op } = require('sequelize').Sequelize
+
+const PAGE_SIZE = 10
+
+module.exports = ({ Channel, Video }) => {
+  const search = async (query, page = 0) => {
+    const { rows, count } = await Video.findAndCountAll({
+      offset: (page + 1) * PAGE_SIZE,
+      limit: PAGE_SIZE,
       where: {
-        id
-      }
+        title: {
+          [Op.like]: `%${query}%`
+        }
+      },
+      include: [{ model: Channel }]
     })
     return {
-      id,
-      name: channel.name,
-      desc: channel.desc,
-      joined: channel.joined,
-      user: channel.user
+      videos: rows,
+      total: count,
+      pages: Math.ceil(count / PAGE_SIZE)
     }
   }
-  const getVideo = async (db, id) => {
-    const video = await db.Video.findOne({
-      where: {
-        id
-      }
-    })
-    return {
-      id,
-      title: video.title,
-      desc: video.desc,
-      likes: video.likes,
-      dislikes: video.dislikes,
-      uploaded: video.uploaded,
-      targetAudience: video.targetAudience,
-      channel: video.channel
-    }
-  }
-  return { getChannel, getVideo }
+  return { search }
 }

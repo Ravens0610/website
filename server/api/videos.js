@@ -56,48 +56,13 @@ module.exports = ({ db, controllers, consola }) => {
 
   router.get('/search', (req, res, next) => {
     if (!req.query.query) return next(new HTTPError('Invalid query parameter'))
-    const where = {
-      title: db.sequelize.where(
-        db.sequelize.fn('LOWER', db.sequelize.col('title')),
-        'LIKE',
-        '%' + req.query.query + '%'
-      )
-    }
-    if (!req.query.page) {
-      db.Video.findAll({
-        where,
-        attributes: ['id']
-      })
-        .then((videos) =>
-          Promise.all(videos.map(({ id }) => controllers.videos.getVideo(id)))
-        )
-        .then((videos) =>
-          sendResponse(res, { videos }, null, 'v1.videos.search')
-        )
-        .catch((err) => next(new HTTPError(err)))
-    } else {
-      req.query.page = parseInt(req.query.page)
-      const offset = req.query.page * 10
-      db.Video.findAndCountAll({
-        where,
-        attributes: ['id']
-      })
-        .then(({ row, count }) =>
-          Promise.all(
-            row
-              .slice(offset, offset + 10)
-              .map((video) => controllers.videos.getVideo(video.get('id')))
-          ).then((videos) =>
-            sendResponse(res, {
-              videos,
-              count: videos.length,
-              total: count,
-              pages: Math.ceil(count / 10)
-            })
-          )
-        )
-        .catch((err) => next(new HTTPError(err)))
-    }
+    if (!req.query.page) req.query.page = 0
+    else req.query.page = parseInt(req.query.page, 10)
+    if (isNaN(req.query.page)) return next(new HTTPError('Invalid page'))
+    controllers.videos
+      .search(req.query.query, req.query.page)
+      .then((data) => sendResponse(res, data, null, 'v1.videos.search'))
+      .catch((err) => new HTTPError(err))
   })
 
   return router
