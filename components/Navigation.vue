@@ -17,7 +17,9 @@
         </v-list-item>
         <v-list-item link two-line to="/user">
           <v-list-item-content>
-            <v-list-item-title class="title">{{ user.name }}</v-list-item-title>
+            <v-list-item-title class="title">{{
+              user.username
+            }}</v-list-item-title>
           </v-list-item-content>
           <v-list-item-action>
             <v-icon>mdi-menu-down</v-icon>

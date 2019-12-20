@@ -5,9 +5,9 @@ module.exports = ({ User }) => {
     const user = await User.findOne({ where })
     return user !== null
   }
-  const register = async (name, passwd, email, bday) => {
-    if (await hasUser({ name }))
-      throw new Error('User already exists with that name')
+  const register = async (username, passwd, email, bday) => {
+    if (await hasUser({ username }))
+      throw new Error('User already exists with that username')
     if (await hasUser({ email }))
       throw new Error('User already exists with that E-Mail')
 
@@ -15,7 +15,7 @@ module.exports = ({ User }) => {
     const password = await bcrypt.hash(passwd, salt)
 
     const user = await User.create({
-      name,
+      username,
       password,
       email,
       bday
