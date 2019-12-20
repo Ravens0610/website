@@ -1,7 +1,3 @@
-.data
-.nuxt
-node_modules
-npm-debug.log
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
@@ -13,3 +9,16 @@ install_manifest.txt
 compile_commands.json
 CTestTestfile.cmake
 _deps
+Dockerfile
+docker-compose.yml
+.dockerignore
+.gitpod.Dockerfile
+.gitpod.yml
+CMakeLists.txt
+.data
+components
+layouts
+middleware
+nginx
+pages
+plugins
