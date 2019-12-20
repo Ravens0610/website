@@ -3,7 +3,10 @@ const uuidv4 = require('uuid/v4')
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
-    static associate({ Channel }) {
+    static associate({ Channel, UserToken }) {
+      User.hasMany(UserToken, {
+        foreignKey: 'userID'
+      })
       User.hasMany(Channel, {
         foreignKey: 'ownerID'
       })
@@ -17,14 +20,6 @@ module.exports = (sequelize, DataTypes) => {
       password: { type: DataTypes.STRING, allowNull: false },
       joined: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
       bday: { type: DataTypes.DATE, allowNull: false },
-      tokens: {
-        type: DataTypes.JSON,
-        defaultValue: []
-      },
-      follows: {
-        type: DataTypes.JSON,
-        defaultValue: []
-      },
       type: {
         type: DataTypes.ENUM,
         values: ['default', 'admin']

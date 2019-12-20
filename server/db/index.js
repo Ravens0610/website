@@ -8,9 +8,10 @@ const sequelize = new Sequelize({
 
 const Channel = sequelize.import('./models/channel')
 const User = sequelize.import('./models/user')
+const UserToken = sequelize.import('./models/user-token')
 const Video = sequelize.import('./models/video')
 
-const models = { Channel, User, Video }
+const models = { Channel, User, UserToken, Video }
 Object.keys(models).forEach((name) => {
   if (models[name].associate) {
     models[name].associate(models)

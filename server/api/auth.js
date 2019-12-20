@@ -1,7 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 const express = require('express')
-const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const { getUserToken, HTTPError, sendResponse } = require('../utils.js')
 
@@ -14,8 +13,8 @@ module.exports = ({ db, controllers, consola, config }) => {
     )
     if (!id) return next(new HTTPError('Invalid user ID'))
     controllers.auth
-      .getUser(id, { email: false })
-      .then((user) => sendResponse(res, user, null, `v1.auth.getUser`))
+      .getUser({ id })
+      .then((user) => sendResponse(res, user.toJSON(), null, 'v1.auth.getUser'))
       .catch((err) => next(new HTTPError(err.message)))
   })
 
@@ -57,38 +56,10 @@ module.exports = ({ db, controllers, consola, config }) => {
     if (!email) return next(new HTTPError('Invalid email'))
     const password = req.body.password
     if (!password) return next(new HTTPError('Invalid password'))
-    db.User.findOne({
-      where: {
-        email
-      }
-    })
-      .then(async (user) => {
-        if (!user) return next(new HTTPError('User does not exist'))
-        const isValid = await bcrypt.compare(password, user.get('password'))
-        if (!isValid) return next(new HTTPError('Invalid password'))
-        const token = jwt.sign(
-          {
-            exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
-            data: {
-              userID: user.id
-            }
-          },
-          config.jwtKey
-        )
-        const tokens = user.get('tokens') || []
-        tokens.push(token)
-        user.set('tokens', tokens)
-        return user.save().then(() =>
-          sendResponse(
-            res,
-            {
-              token
-            },
-            null,
-            'v1.auth.login'
-          )
-        )
-      })
+
+    controllers.auth
+      .login(email, password)
+      .then((res) => sendResponse(res, res, null, 'v1.auth.login'))
       .catch((err) => next(new HTTPError(err)))
   })
 
@@ -99,13 +70,10 @@ module.exports = ({ db, controllers, consola, config }) => {
       const { userID } = jwt.verify(token, config.jwtKey, {
         complete: true
       }).payload.data
-      db.User.findOne({
-        where: {
-          id: userID
-        }
-      })
+      controllers.auth
+        .getUser({ id: userID })
         .then((user) =>
-          sendResponse(res, user.toJSON(), null, `v1.auth.getUser`)
+          sendResponse(res, user.toJSON(), null, 'v1.auth.getUser')
         )
         .catch((err) => next(new HTTPError(err)))
     } catch (e) {

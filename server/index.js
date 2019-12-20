@@ -14,7 +14,7 @@ const config = require('../nuxt.config.js')
 config.dev = process.env.NODE_ENV !== 'production'
 
 const db = require('./db/')
-const controllers = require('./controllers/')(db)
+const controllers = require('./controllers/')(db, config)
 
 async function start() {
   const mkdir = (p) =>
