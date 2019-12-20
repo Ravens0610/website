@@ -3,6 +3,13 @@ const uuidv4 = require('uuid/v4')
 
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
+    get timeSinceJoined() {
+      return new Date() - this.get('joined')
+    }
+    get age() {
+      return new Date().getFullYear() - this.get('bday').getFullYear()
+    }
+
     static associate({ Channel, UserToken }) {
       User.hasMany(UserToken, {
         foreignKey: 'userID'

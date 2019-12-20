@@ -1,4 +1,5 @@
 const { Model } = require('sequelize')
+const uuidv4 = require('uuid/v4')
 
 module.exports = (sequelize, DataTypes) => {
   class Channel extends Model {
@@ -26,13 +27,11 @@ module.exports = (sequelize, DataTypes) => {
           key: 'id'
         }
       },
-      subs: {
-        type: DataTypes.JSON,
-        defaultValue: []
-      },
       id: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV2,
+        defaultValue: () => {
+          return uuidv4()
+        },
         primaryKey: true
       }
     },

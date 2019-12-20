@@ -3,6 +3,7 @@ module.exports = (db, config) => {
 
   return {
     ...add('auth'),
+    ...add('channel'),
     ...add('videos')
   }
 }

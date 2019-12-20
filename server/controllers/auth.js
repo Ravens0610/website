@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 module.exports = ({ User, UserToken }, config) => {
   const getUser = async (where) => {
     const user = await User.findOne({ where })
-    if (!user) throw new Error('No such user exists')
+    if (user === null) throw new Error('No such user exists')
     return user
   }
   const hasUser = async (where) => {
